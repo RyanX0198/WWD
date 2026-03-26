@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     # 知识库路径
     KNOWLEDGE_BASE_PATH: str = "./knowledge"
     
+    # JWT 认证配置
+    SECRET_KEY: str = "your-secret-key-change-in-production"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 小时
+    
     class Config:
         env_file = ".env"
         extra = "ignore"  # 忽略未定义的额外字段，避免报错

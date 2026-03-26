@@ -4,7 +4,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import documents, knowledge, writing, templates
+from app.api import documents, knowledge, writing, templates, auth
 from app.core.config import settings
 
 app = FastAPI(
@@ -23,6 +23,7 @@ app.add_middleware(
 )
 
 # 注册路由
+app.include_router(auth.router, prefix="/api/auth", tags=["认证"])
 app.include_router(writing.router, prefix="/api/writing", tags=["写作"])
 app.include_router(knowledge.router, prefix="/api/knowledge", tags=["知识库"])
 app.include_router(templates.router, prefix="/api/templates", tags=["模板中心"])

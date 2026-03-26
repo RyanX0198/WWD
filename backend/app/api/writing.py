@@ -1,12 +1,29 @@
 """
 写作 API 路由
 """
-from fastapi import APIRouter, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from app.core.config import settings
 from app.core.harness import writing_harness
+from app.core.security import get_current_active_user
 
 router = APIRouter()
+
+
+# 根据配置决定是否启用认证
+# 开发环境可以设置为 False
+ENABLE_AUTH = False  # 可以在 .env 中配置
+
+
+def get_auth_dependency():
+    """获取认证依赖（可配置）"""
+    if ENABLE_AUTH:
+        return Depends(get_current_active_user)
+    else:
+        # 返回一个空依赖，不执行认证
+        return Depends(lambda: None)
 
 
 class WritingRequest(BaseModel):
@@ -25,9 +42,14 @@ class WritingResponse(BaseModel):
 
 
 @router.post("/generate", response_model=WritingResponse)
-async def generate_document(request: WritingRequest):
+async def generate_document(
+    request: WritingRequest,
+    current_user: Optional[dict] = get_auth_dependency()
+):
     """
     生成公文
+    
+    需要认证（如果启用了 ENABLE_AUTH）
     """
     try:
         result = await writing_harness.write(
@@ -48,7 +70,10 @@ async def generate_document(request: WritingRequest):
 
 
 @router.post("/outline")
-async def generate_outline(request: WritingRequest):
+async def generate_outline(
+    request: WritingRequest,
+    current_user: Optional[dict] = get_auth_dependency()
+):
     """
     仅生成大纲
     """
@@ -57,7 +82,11 @@ async def generate_outline(request: WritingRequest):
 
 
 @router.post("/polish")
-async def polish_document(text: str, style: str = "formal"):
+async def polish_document(
+    text: str, 
+    style: str = "formal",
+    current_user: Optional[dict] = get_auth_dependency()
+):
     """
     润色文档
     """
