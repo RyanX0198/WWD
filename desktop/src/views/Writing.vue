@@ -69,8 +69,7 @@
       
       <!-- 右侧：输出区 -->
       <div class="output-section">
-        <div class="section-title"
-003e
+        <div class="section-title">
           <span>生成结果</span>
           <el-button-group v-if="result.content">
             <el-button size="small" @click="copyContent">
