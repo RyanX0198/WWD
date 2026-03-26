@@ -1,0 +1,32 @@
+# 后端依赖
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# LangChain 生态
+langchain==0.1.0
+langchain-openai==0.0.5
+langchain-anthropic==0.1.0
+langgraph==0.0.40
+deepagents==0.1.0
+
+# 向量数据库
+qdrant-client==1.7.0
+
+# 缓存
+redis==5.0.1
+
+# 工具
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# 文本处理
+python-markdown==3.5.2
+pyyaml==6.0.1
+
+# 测试
+pytest==7.4.4
+pytest-asyncio==0.21.1
+httpx==0.26.0
