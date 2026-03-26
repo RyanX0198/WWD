@@ -11,6 +11,12 @@ langchain-anthropic==0.1.0
 langgraph==0.0.40
 deepagents==0.1.0
 
+# 国内模型 SDK (OpenAI 兼容接口，通过 base_url 配置)
+# - Kimi: https://api.moonshot.cn/v1
+# - 千问: https://dashscope.aliyuncs.com/compatible-mode/v1
+# - GLM: https://open.bigmodel.cn/api/paas/v4
+# - MiniMax: https://api.minimax.chat/v1
+
 # 向量数据库
 qdrant-client==1.7.0
 
