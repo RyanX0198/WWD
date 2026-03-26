@@ -1,0 +1,246 @@
+{
+  "version": "1.0",
+  "project": "政府公文智能写作助手",
+  "tasks": [
+    {
+      "id": "T001",
+      "title": "写作风格学习功能",
+      "description": "基于用户历史文档学习写作风格，生成个性化内容",
+      "phase": "Phase 2",
+      "module": "AI Engine",
+      "priority": "P0",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 16,
+      "actual_hours": 0,
+      "dependencies": ["T002"],
+      "acceptance_criteria": [
+        "能够解析用户历史文档提取风格特征",
+        "生成内容符合用户过往文风",
+        "支持风格切换（正式/务实/简洁等）"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T002",
+      "title": "文档数据库设计",
+      "description": "设计 PostgreSQL 文档表结构，支持版本历史",
+      "phase": "Phase 2",
+      "module": "Backend",
+      "priority": "P0",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 6,
+      "actual_hours": 0,
+      "dependencies": [],
+      "acceptance_criteria": [
+        "文档表支持标题、内容、类型、状态",
+        "版本历史表记录每次修改",
+        "支持软删除和恢复"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T003",
+      "title": "机构库管理",
+      "description": "管理行政机构层级关系，支持机构查询",
+      "phase": "Phase 2",
+      "module": "Knowledge",
+      "priority": "P0",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 12,
+      "actual_hours": 0,
+      "dependencies": [],
+      "acceptance_criteria": [
+        "支持机构 CRUD 操作",
+        "支持机构层级关系",
+        "支持机构与人物关联"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T004",
+      "title": "多轮对话润色",
+      "description": "支持连续对话方式修改和润色文档",
+      "phase": "Phase 2",
+      "module": "AI Engine",
+      "priority": "P0",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 10,
+      "actual_hours": 0,
+      "dependencies": [],
+      "acceptance_criteria": [
+        "支持基于上下文的连续对话",
+        "支持局部修改和全文润色",
+        "保存对话历史"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T005",
+      "title": "API 认证机制",
+      "description": "实现 JWT 认证，保护 API 接口",
+      "phase": "Phase 2",
+      "module": "Backend",
+      "priority": "P0",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 6,
+      "actual_hours": 0,
+      "dependencies": [],
+      "acceptance_criteria": [
+        "实现 JWT Token 生成和验证",
+        "登录接口",
+        "受保护路由生效"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T006",
+      "title": "实时协作编辑",
+      "description": "WebSocket 实现多人实时协作编辑",
+      "phase": "Phase 2",
+      "module": "Backend",
+      "priority": "P0",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 20,
+      "actual_hours": 0,
+      "dependencies": ["T002"],
+      "acceptance_criteria": [
+        "WebSocket 连接稳定",
+        "多人编辑冲突处理",
+        "光标位置同步"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T007",
+      "title": "模板编辑器",
+      "description": "可视化模板编辑，支持变量插入",
+      "phase": "Phase 2",
+      "module": "Frontend",
+      "priority": "P1",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 14,
+      "actual_hours": 0,
+      "dependencies": [],
+      "acceptance_criteria": [
+        "富文本编辑器",
+        "变量插入功能",
+        "模板预览"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T008",
+      "title": "文档版本历史",
+      "description": "查看和恢复文档历史版本",
+      "phase": "Phase 2",
+      "module": "Backend",
+      "priority": "P1",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 8,
+      "actual_hours": 0,
+      "dependencies": ["T002"],
+      "acceptance_criteria": [
+        "自动保存版本",
+        "版本对比功能",
+        "版本恢复"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T009",
+      "title": "数据导入导出",
+      "description": "知识库数据导入导出（Excel/JSON）",
+      "phase": "Phase 2",
+      "module": "Knowledge",
+      "priority": "P1",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 8,
+      "actual_hours": 0,
+      "dependencies": [],
+      "acceptance_criteria": [
+        "人物档案导入导出",
+        "Excel 格式支持",
+        "JSON 格式支持"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T010",
+      "title": "离线模式支持",
+      "description": "桌面端离线使用，数据本地缓存",
+      "phase": "Phase 2",
+      "module": "Desktop",
+      "priority": "P1",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 16,
+      "actual_hours": 0,
+      "dependencies": [],
+      "acceptance_criteria": [
+        "离线状态下可查看历史文档",
+        "离线编辑本地保存",
+        "恢复网络后自动同步"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T011",
+      "title": "单元测试覆盖",
+      "description": "后端单元测试覆盖率达到 80%",
+      "phase": "Phase 2",
+      "module": "QA",
+      "priority": "P1",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 20,
+      "actual_hours": 0,
+      "dependencies": [],
+      "acceptance_criteria": [
+        "核心业务逻辑测试覆盖",
+        "API 接口测试",
+        "覆盖率报告"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    },
+    {
+      "id": "T012",
+      "title": "政策文件自动更新",
+      "description": "定时爬取政策网站，自动更新政策库",
+      "phase": "Phase 2",
+      "module": "Knowledge",
+      "priority": "P2",
+      "status": "backlog",
+      "assignee": null,
+      "estimated_hours": 16,
+      "actual_hours": 0,
+      "dependencies": [],
+      "acceptance_criteria": [
+        "定时任务配置",
+        "政策网站爬虫",
+        "更新通知"
+      ],
+      "created_at": "2026-03-26",
+      "updated_at": "2026-03-26"
+    }
+  ]
+}
