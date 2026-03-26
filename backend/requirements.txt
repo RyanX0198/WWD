@@ -1,41 +1,40 @@
-# 后端依赖
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-pydantic==2.5.3
-pydantic-settings==2.1.0
+# 后端依赖 - 稳定版本
+# 安装命令: pip install -r requirements.txt
+
+# 核心框架（使用兼容版本）
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
 
 # LangChain 生态
-langchain==0.1.0
-langchain-openai==0.0.5
-langchain-anthropic==0.1.0
-langgraph==0.0.40
-deepagents==0.1.0
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langchain-anthropic>=0.1.0
+langgraph>=0.0.40
 
-# 国内模型 SDK (OpenAI 兼容接口，通过 base_url 配置)
-# - Kimi: https://api.moonshot.cn/v1
-# - 千问: https://dashscope.aliyuncs.com/compatible-mode/v1
-# - GLM: https://open.bigmodel.cn/api/paas/v4
-# - MiniMax: https://api.minimax.chat/v1
+# 注意: deepagents 如果安装失败可以先跳过
+# deepagents>=0.1.0
 
-# 向量数据库
-qdrant-client==1.7.0
+# 向量数据库（可选）
+qdrant-client>=1.7.0
 
-# 缓存
-redis==5.0.1
+# 缓存（可选）
+redis>=5.0.0
 
 # 工具
-python-multipart==0.0.6
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
+python-multipart>=0.0.6
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
 
 # 文本处理
-python-markdown==3.5.2
-pyyaml==6.0.1
+python-markdown>=3.5.0
+pyyaml>=6.0.0
 
-# 文档导出
-python-docx==1.1.0
+# 文档导出（可选）
+python-docx>=1.1.0
 
-# 测试
-pytest==7.4.4
-pytest-asyncio==0.21.1
-httpx==0.26.0
+# 测试（可选）
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.26.0
