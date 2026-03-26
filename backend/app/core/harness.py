@@ -12,6 +12,7 @@ from langgraph.graph import StateGraph, END
 from app.core.config import settings
 from app.core.llm_router import llm_router
 from app.services.knowledge import knowledge_service
+from app.services.template import template_service
 
 
 class WritingState(TypedDict):
@@ -95,10 +96,11 @@ class WritingHarness:
         doc_type = state.get("document_type", "")
         
         references = []
+        involved_people = []
+        matched_templates = []
         
         # 1. 从主题中提取可能的人名并查询
         people = knowledge_service.list_all_people()
-        involved_people = []
         for person in people:
             if person in topic:
                 person_data = knowledge_service.get_person(person)
@@ -106,15 +108,25 @@ class WritingHarness:
                     involved_people.append(person_data)
                     references.append(f"人物档案: {person}")
         
-        # 2. 查询相关政策（简化版，后续可用向量检索）
-        # TODO: 实现政策文件检索
+        # 2. 匹配模板
+        try:
+            templates = await template_service.match_template(
+                doc_type=doc_type,
+                topic=topic
+            )
+            matched_templates = templates[:2]  # 取前2个最匹配的
+            for t in matched_templates:
+                references.append(f"参考模板: {t['template']['title']}")
+        except Exception as e:
+            print(f"Template match error: {e}")
         
-        # 3. 查询模板
-        # TODO: 实现模板匹配
+        # 3. 查询相关政策（简化版，后续可用向量检索）
+        # TODO: 实现政策文件检索
         
         return {
             "references": references,
             "involved_people": involved_people,
+            "matched_templates": matched_templates,
             "stage": "outline"
         }
     
@@ -183,6 +195,7 @@ class WritingHarness:
         topic = state.get("topic", "")
         outline = state.get("outline", [])
         involved_people = state.get("involved_people", [])
+        matched_templates = state.get("matched_templates", [])
         
         # 构建大纲文本
         outline_text = "\n".join([
@@ -199,6 +212,12 @@ class WritingHarness:
                 formal = rules.get('正式场合', p.get('name'))
                 addressing_hint += f"- {p.get('name')} 在正式场合称：{formal}\n"
         
+        # 构建模板提示
+        template_hint = ""
+        if matched_templates:
+            best_template = matched_templates[0]
+            template_hint = f"\n\n参考模板结构（可适当调整）：\n{best_template['template'].get('metadata', {}).get('description', '')}\n"
+        
         model = llm_router.get_model(task_type="writing")
         
         # 读取系统提示词
@@ -213,7 +232,7 @@ class WritingHarness:
 主题: {topic}
 
 大纲:
-{outline_text}{addressing_hint}
+{outline_text}{addressing_hint}{template_hint}
 
 要求：
 1. 严格遵循政府公文格式规范

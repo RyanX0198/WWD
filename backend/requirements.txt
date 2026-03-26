@@ -32,6 +32,9 @@ passlib[bcrypt]==1.7.4
 python-markdown==3.5.2
 pyyaml==6.0.1
 
+# 文档导出
+python-docx==1.1.0
+
 # 测试
 pytest==7.4.4
 pytest-asyncio==0.21.1
