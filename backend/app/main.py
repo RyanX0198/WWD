@@ -4,7 +4,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import documents, documents_v2, knowledge, writing, templates, auth, organizations, polish
+from app.api import documents, documents_v2, knowledge, writing, templates, auth, organizations, polish, styles
 from app.core.config import settings
 from app.db import init_database
 
@@ -28,6 +28,7 @@ app.add_middleware(
 
 # 注册路由
 app.include_router(auth.router, prefix="/api/auth", tags=["认证"])
+app.include_router(styles.router, prefix="/api", tags=["写作风格"])
 app.include_router(organizations.router, prefix="/api/orgs", tags=["机构管理"])
 app.include_router(polish.router, prefix="/api/polish", tags=["对话润色"])
 app.include_router(writing.router, prefix="/api/writing", tags=["写作"])

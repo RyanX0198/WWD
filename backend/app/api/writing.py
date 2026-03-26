@@ -30,6 +30,7 @@ class WritingRequest(BaseModel):
     document_type: str  # 公文类型
     topic: str  # 主题
     requirements: str = ""  # 具体要求（可选）
+    style_id: Optional[str] = None  # 写作风格ID（可选）
 
 
 class WritingResponse(BaseModel):
@@ -54,7 +55,8 @@ async def generate_document(
     try:
         result = await writing_harness.write(
             document_type=request.document_type,
-            topic=request.topic
+            topic=request.topic,
+            style_id=request.style_id
         )
         
         return WritingResponse(

@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.llm_router import llm_router
 from app.services.knowledge import knowledge_service
 from app.services.template import template_service
+from app.services.style_learning import style_learning_service
 
 
 class WritingState(TypedDict):
@@ -21,6 +22,7 @@ class WritingState(TypedDict):
     messages: Annotated[List[BaseMessage], operator.add]
     document_type: str  # 公文类型：讲话稿、工作总结等
     topic: str  # 主题
+    style_id: Optional[str]  # 写作风格ID
     outline: Optional[List[dict]]  # 大纲
     draft: Optional[str]  # 初稿
     references: List[str]  # 引用资料
@@ -197,6 +199,7 @@ class WritingHarness:
         outline = state.get("outline", [])
         involved_people = state.get("involved_people", [])
         matched_templates = state.get("matched_templates", [])
+        style_id = state.get("style_id")
         
         # 构建大纲文本
         outline_text = "\n".join([
@@ -219,6 +222,13 @@ class WritingHarness:
             best_template = matched_templates[0]
             template_hint = f"\n\n参考模板结构（可适当调整）：\n{best_template['template'].get('metadata', {}).get('description', '')}\n"
         
+        # 构建风格提示
+        style_hint = ""
+        if style_id:
+            style_prompt = style_learning_service.get_style_prompt(style_id)
+            if style_prompt:
+                style_hint = f"\n\n{style_prompt}\n"
+        
         model = llm_router.get_model(task_type="writing")
         
         # 读取系统提示词
@@ -233,8 +243,7 @@ class WritingHarness:
 主题: {topic}
 
 大纲:
-{outline_text}{addressing_hint}{template_hint}
-
+{outline_text}{addressing_hint}{template_hint}{style_hint}
 要求：
 1. 严格遵循政府公文格式规范
 2. 语言庄重、准确、简洁
@@ -299,13 +308,19 @@ class WritingHarness:
             "stage": "complete"
         }
     
-    async def write(self, document_type: str, topic: str) -> dict:
+    async def write(
+        self, 
+        document_type: str, 
+        topic: str,
+        style_id: Optional[str] = None
+    ) -> dict:
         """
         执行写作任务
         
         Args:
             document_type: 公文类型
             topic: 写作主题
+            style_id: 写作风格ID（可选）
             
         Returns:
             写作结果
@@ -314,6 +329,7 @@ class WritingHarness:
             messages=[HumanMessage(content=f"请写一篇{document_type}，主题是：{topic}")],
             document_type=document_type,
             topic=topic,
+            style_id=style_id,
             outline=None,
             draft=None,
             references=[],
