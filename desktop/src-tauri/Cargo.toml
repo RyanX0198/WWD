@@ -1,0 +1,20 @@
+[package]
+name = "gov-writing-assistant"
+version = "0.1.0"
+description = "政府公文智能写作助手"
+authors = ["dev@example.com"]
+license = "MIT"
+repository = "https://github.com/RyanX0198/WWD"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5.0", features = [] }
+
+[dependencies]
+tauri = { version = "1.5.0", features = ["shell-open", "dialog-open", "dialog-save", "fs-all"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
