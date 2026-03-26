@@ -2,6 +2,7 @@
 Harness 核心引擎 - 公文写作 Agent
 基于 LangGraph + Deep Agents
 """
+import json
 from typing import TypedDict, List, Optional, Annotated
 import operator
 from pathlib import Path
