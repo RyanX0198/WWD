@@ -12,13 +12,18 @@ class Settings(BaseSettings):
     # API 配置
     API_V1_STR: str = "/api"
     
-    # LLM 配置
+    # LLM 配置 - 国内模型（主力）
+    KIMI_API_KEY: str = ""
+    DASHSCOPE_API_KEY: str = ""  # 通义千问
+    ZHIPU_API_KEY: str = ""       # ChatGLM
+    MINIMAX_API_KEY: str = ""
+    
+    # LLM 配置 - 国外模型（备用）
     OPENAI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
-    KIMI_API_KEY: str = ""
     
     # 默认模型
-    DEFAULT_MODEL: str = "gpt-5"
+    DEFAULT_MODEL: str = "kimi-k2.5"
     
     # Qdrant 配置
     QDRANT_HOST: str = "localhost"
@@ -34,6 +39,7 @@ class Settings(BaseSettings):
     
     class Config:
         env_file = ".env"
+        extra = "ignore"  # 忽略未定义的额外字段，避免报错
 
 
 settings = Settings()
