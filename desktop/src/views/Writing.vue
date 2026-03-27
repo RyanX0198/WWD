@@ -2,25 +2,54 @@
   <div class="writing-page">
     <!-- 顶部工具栏 -->
     <div class="toolbar">
-      <div class="doc-type-selector">
-        <span class="label">文档类型：</span>
-        <el-select v-model="form.docType" placeholder="选择类型" style="width: 160px">
-          <el-option label="领导讲话稿" value="讲话稿" />
-          <el-option label="工作总结" value="工作总结" />
-          <el-option label="活动策划" value="活动策划" />
-          <el-option label="会议纪要" value="会议纪要" />
-        </el-select>
+      <div class="toolbar-left">
+        <div class="doc-type-selector">
+          <span class="label">文档类型：</span>
+          <el-select v-model="form.docType" placeholder="选择类型" style="width: 140px">
+            <el-option label="领导讲话稿" value="讲话稿" />
+            <el-option label="工作总结" value="工作总结" />
+            <el-option label="活动策划" value="活动策划" />
+            <el-option label="会议纪要" value="会议纪要" />
+            <el-option label="通知公告" value="通知公告" />
+            <el-option label="工作报告" value="工作报告" />
+          </el-select>
+        </div>
+        
+        <div class="style-selector">
+          <span class="label">写作风格：</span>
+          <el-select v-model="form.styleId" placeholder="选择风格" style="width: 140px" clearable>
+            <el-option
+              v-for="style in writingStyles"
+              :key="style.style_id"
+              :label="style.name"
+              :value="style.style_id"
+            >
+              <span>{{ style.name }}</span>
+              <el-tag v-if="style.is_default" size="small" type="info" style="margin-left: 8px">预设</el-tag>
+            </el-option>
+          </el-select>
+          <el-tooltip v-if="selectedStyle" :content="selectedStyle.description" placement="bottom">
+            <el-icon class="info-icon"><Info-Filled /></el-icon>
+          </el-tooltip>
+        </div>
       </div>
       
       <div class="actions">
         <el-button type="primary" @click="generateOutline" :loading="outlineLoading">
-          <el-icon><List /></el-icon> 生成大纲
+          <el-icon><List /></el-icon>
+          生成大纲
         </el-button>
         <el-button type="success" @click="generateDocument" :loading="writingLoading">
-          <el-icon><Magic-Stick /></el-icon> AI写作
+          <el-icon><Magic-Stick /></el-icon>
+          AI写作
         </el-button>
-        <el-button @click="exportDoc">
-          <el-icon><Download /></el-icon> 导出
+        <el-button v-if="result.content" @click="showPolishDialog = true">
+          <el-icon><Brush /></el-icon>
+          润色
+        </el-button>
+        <el-button v-if="result.content" @click="exportDoc">
+          <el-icon><Download /></el-icon>
+          导出
         </el-button>
       </div>
     </div>
@@ -73,10 +102,12 @@
           <span>生成结果</span>
           <el-button-group v-if="result.content">
             <el-button size="small" @click="copyContent">
-              <el-icon><Copy-Document /></el-icon> 复制
+              <el-icon><Copy-Document /></el-icon>
+              复制
             </el-button>
-            <el-button size="small" @click="polishDocument">
-              <el-icon><Brush /></el-icon> 润色
+            <el-button size="small" @click="saveDocument">
+              <el-icon><Document-Checked /></el-icon>
+              保存
             </el-button>
           </el-button-group>
         </div>
@@ -94,21 +125,52 @@
         </div>
       </div>
     </div>
+    
+    <!-- 润色对话框 -->
+    <el-dialog
+      v-model="showPolishDialog"
+      title="AI 润色助手"
+      width="800px"
+      destroy-on-close
+    >
+      <PolishPanel
+        :initial-text="result.content"
+        @apply="applyPolishedText"
+      />
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import MarkdownIt from 'markdown-it'
-import { generateDocumentApi, generateOutlineApi } from '@/utils/api'
+import {
+  List,
+  MagicStick,
+  Brush,
+  Download,
+  CopyDocument,
+  DocumentAdd,
+  DocumentChecked,
+  InfoFilled
+} from '@element-plus/icons-vue'
+import {
+  generateDocumentApi,
+  generateOutlineApi,
+  getStylesApi,
+  createDocumentApi,
+  exportDocumentApi
+} from '@/utils/api'
+import PolishPanel from '@/components/PolishPanel.vue'
 
 const md = new MarkdownIt()
 
 const form = ref({
   docType: '讲话稿',
   topic: '',
-  requirements: ''
+  requirements: '',
+  styleId: ''
 })
 
 const outline = ref<any[]>([])
@@ -119,10 +181,26 @@ const result = ref({
 
 const outlineLoading = ref(false)
 const writingLoading = ref(false)
+const writingStyles = ref<any[]>([])
+const showPolishDialog = ref(false)
 
 const renderedContent = computed(() => {
   return md.render(result.value.content)
 })
+
+const selectedStyle = computed(() => {
+  return writingStyles.value.find(s => s.style_id === form.value.styleId)
+})
+
+// 加载写作风格
+const loadStyles = async () => {
+  try {
+    const res = await getStylesApi()
+    writingStyles.value = res || []
+  } catch (error) {
+    console.error('Failed to load styles:', error)
+  }
+}
 
 // 生成大纲
 const generateOutline = async () => {
@@ -159,7 +237,8 @@ const generateDocument = async () => {
     const res = await generateDocumentApi({
       document_type: form.value.docType,
       topic: form.value.topic,
-      requirements: form.value.requirements
+      requirements: form.value.requirements,
+      style_id: form.value.styleId || undefined
     })
     result.value.content = res.draft || ''
     outline.value = res.outline || []
@@ -177,15 +256,56 @@ const copyContent = () => {
   ElMessage.success('已复制到剪贴板')
 }
 
-// 润色文档
-const polishDocument = () => {
-  ElMessage.info('润色功能开发中...')
+// 保存文档
+const saveDocument = async () => {
+  if (!result.value.content) return
+  
+  try {
+    await createDocumentApi({
+      title: form.value.topic,
+      content: result.value.content,
+      doc_type: form.value.docType
+    })
+    ElMessage.success('文档保存成功')
+  } catch (error) {
+    console.error('Failed to save document:', error)
+    ElMessage.error('保存失败')
+  }
+}
+
+// 应用润色后的文本
+const applyPolishedText = (text: string) => {
+  result.value.content = text
+  showPolishDialog.value = false
+  ElMessage.success('润色内容已应用')
 }
 
 // 导出文档
-const exportDoc = () => {
-  ElMessage.info('导出功能开发中...')
+const exportDoc = async () => {
+  if (!result.value.content) {
+    ElMessage.warning('没有可导出的内容')
+    return
+  }
+  
+  try {
+    // 这里简化处理，实际应该调用后端导出API
+    const blob = new Blob([result.value.content], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${form.value.topic || '文档'}.txt`
+    link.click()
+    URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('Failed to export:', error)
+    ElMessage.error('导出失败')
+  }
 }
+
+onMounted(() => {
+  loadStyles()
+})
 </script>
 
 <style scoped>
@@ -204,15 +324,27 @@ const exportDoc = () => {
   border-bottom: 1px solid #e4e7ed;
 }
 
-.doc-type-selector {
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.doc-type-selector,
+.style-selector {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.doc-type-selector .label {
+.label {
   color: #606266;
   font-size: 14px;
+}
+
+.info-icon {
+  color: #909399;
+  cursor: help;
 }
 
 .actions {
