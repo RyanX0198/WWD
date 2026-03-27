@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时协作编辑测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .connection-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #666;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background: #1890ff;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ff4d4f;
+            color: white;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .editor-panel {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+        
+        .editor-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .editor-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .editor-title {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .editor-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .status-connected {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+        
+        .status-disconnected {
+            background: #fff2f0;
+            color: #ff4d4f;
+        }
+        
+        .editor-content {
+            padding: 20px;
+            min-height: 400px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .panel-title {
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .user-list {
+            list-style: none;
+        }
+        
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .user-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .user-name {
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .user-self {
+            font-size: 12px;
+            color: #1890ff;
+            margin-left: 5px;
+        }
+        
+        .log-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            font-size: 12px;
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            color: #999;
+            margin-right: 8px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1890ff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+        
+        .remote-cursor {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            pointer-events: none;
+            transition: all 0.1s ease;
+        }
+        
+        .remote-cursor-label {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            color: white;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 实时协作编辑测试</h1>
+        
+        <div class="connection-panel">
+            <div class="form-group">
+                <label>用户ID</label>
+                <input type="text" id="userId" placeholder="输入你的用户ID" value="user_1">
+            </div>
+            <div class="form-group">
+                <label>用户名称</label>
+                <input type="text" id="userName" placeholder="输入你的名称" value="用户1">
+            </div>
+            <div class="form-group">
+                <label>文档ID</label>
+                <input type="text" id="documentId" placeholder="输入文档ID" value="doc_test_001">
+            </div>
+            <div class="form-group">
+                <label>WebSocket 地址</label>
+                <input type="text" id="wsUrl" placeholder="ws://localhost:8000/ws/collaborate/" value="ws://localhost:8000/ws/collaborate/">
+            </div>
+            <button class="btn btn-primary" id="connectBtn" onclick="connect()">连接</button>
+            <button class="btn btn-danger" id="disconnectBtn" onclick="disconnect()" disabled>断开</button>
+        </div>
+        
+        <div class="editor-panel">
+            <div class="editor-container">
+                <div class="editor-header">
+                    <span class="editor-title">协作文档</span>
+                    <span class="editor-status status-disconnected" id="connectionStatus">未连接</span>
+                </div>
+                <div class="editor-content">
+                    <textarea id="editor" placeholder="开始协作编辑..." disabled></textarea>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-title">在线用户</div>
+                    <ul class="user-list" id="userList">
+                        <li class="user-item" style="color: #999;">未连接</li>
+                    </ul>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">文档统计</div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="charCount">0</div>
+                            <div class="stat-label">字符数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="revision">0</div>
+                            <div class="stat-label">版本</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">操作日志</div>
+                    <div class="log-container" id="logContainer">
+                        <div class="log-entry">等待连接...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let currentUserId = null;
+        let isConnected = false;
+        let lastContent = '';
+        let isRemoteUpdate = false;
+
+        function log(message) {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="log-time">${time}</span>${message}`;
+            container.insertBefore(entry, container.firstChild);
+        }
+
+        function connect() {
+            const userId = document.getElementById('userId').value;
+            const userName = document.getElementById('userName').value;
+            const documentId = document.getElementById('documentId').value;
+            const baseUrl = document.getElementById('wsUrl').value;
+            
+            if (!userId || !userName || !documentId) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            currentUserId = userId;
+            const url = `${baseUrl}${documentId}?user_id=${userId}&user_name=${encodeURIComponent(userName)}`;
+            
+            log(`正在连接: ${url}`);
+            
+            ws = new WebSocket(url);
+            
+            ws.onopen = () => {
+                isConnected = true;
+                updateConnectionStatus(true);
+                document.getElementById('editor').disabled = false;
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = false;
+                log('连接成功');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleMessage(data);
+            };
+            
+            ws.onclose = () => {
+                isConnected = false;
+                updateConnectionStatus(false);
+                document.getElementById('editor').disabled = true;
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+                log('连接已断开');
+                document.getElementById('userList').innerHTML = '<li class="user-item" style="color: #999;">未连接</li>';
+            };
+            
+            ws.onerror = (error) => {
+                log('连接错误');
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            if (connected) {
+                status.textContent = '已连接';
+                status.className = 'editor-status status-connected';
+            } else {
+                status.textContent = '未连接';
+                status.className = 'editor-status status-disconnected';
+            }
+        }
+
+        function handleMessage(data) {
+            log(`收到消息: ${data.type}`);
+            
+            switch (data.type) {
+                case 'init':
+                    isRemoteUpdate = true;
+                    document.getElementById('editor').value = data.content;
+                    lastContent = data.content;
+                    document.getElementById('revision').textContent = data.revision;
+                    updateCharCount();
+                    updateUserList(data.users);
+                    isRemoteUpdate = false;
+                    log('初始化完成');
+                    break;
+                    
+                case 'operation':
+                    applyRemoteOperation(data.operation);
+                    document.getElementById('revision').textContent = data.operation.revision;
+                    break;
+                    
+                case 'cursor':
+                    // 可以在这里显示远程光标
+                    break;
+                    
+                case 'user_joined':
+                    log(`用户加入: ${data.user.user_name}`);
+                    break;
+                    
+                case 'user_left':
+                    log(`用户离开: ${data.user_id}`);
+                    break;
+            }
+        }
+
+        function applyRemoteOperation(op) {
+            const editor = document.getElementById('editor');
+            isRemoteUpdate = true;
+            
+            if (op.type === 'insert') {
+                const before = editor.value.substring(0, op.position);
+                const after = editor.value.substring(op.position);
+                editor.value = before + op.text + after;
+            } else if (op.type === 'delete') {
+                const before = editor.value.substring(0, op.position);
+                const after = editor.value.substring(op.position + op.length);
+                editor.value = before + after;
+            }
+            
+            lastContent = editor.value;
+            updateCharCount();
+            isRemoteUpdate = false;
+        }
+
+        function updateUserList(users) {
+            const list = document.getElementById('userList');
+            if (!users || users.length === 0) {
+                list.innerHTML = '<li class="user-item" style="color: #999;">暂无其他用户</li>';
+                return;
+            }
+            
+            list.innerHTML = users.map(u => `
+                <li class="user-item">
+                    <div class="user-color" style="background: ${u.color}"></div>
+                    <span class="user-name">${u.user_name}</span>
+                    ${u.user_id === currentUserId ? '<span class="user-self">(我)</span>' : ''}
+                </li>
+            `).join('');
+        }
+
+        function updateCharCount() {
+            const content = document.getElementById('editor').value;
+            document.getElementById('charCount').textContent = content.length;
+        }
+
+        // 编辑器输入处理
+        document.getElementById('editor').addEventListener('input', (e) => {
+            if (!isConnected || isRemoteUpdate) return;
+            
+            const newContent = e.target.value;
+            const oldContent = lastContent;
+            
+            // 简化版：发送整个内容（实际应该用 OT）
+            // 这里为了演示，只记录变化
+            if (newContent.length > oldContent.length) {
+                // 插入
+                const position = e.target.selectionStart - (newContent.length - oldContent.length);
+                const text = newContent.substring(position, e.target.selectionStart);
+                
+                ws.send(JSON.stringify({
+                    type: 'operation',
+                    operation: {
+                        type: 'insert',
+                        position: position,
+                        text: text
+                    }
+                }));
+            } else if (newContent.length < oldContent.length) {
+                // 删除
+                const position = e.target.selectionStart;
+                const length = oldContent.length - newContent.length;
+                
+                ws.send(JSON.stringify({
+                    type: 'operation',
+                    operation: {
+                        type: 'delete',
+                        position: position,
+                        length: length
+                    }
+                }));
+            }
+            
+            lastContent = newContent;
+            updateCharCount();
+        });
+
+        // 光标位置同步
+        let cursorTimeout;
+        document.getElementById('editor').addEventListener('selectionchange', (e) => {
+            if (!isConnected) return;
+            
+            clearTimeout(cursorTimeout);
+            cursorTimeout = setTimeout(() => {
+                const editor = document.getElementById('editor');
+                const position = editor.selectionStart;
+                
+                ws.send(JSON.stringify({
+                    type: 'cursor',
+                    position: position
+                }));
+            }, 100);
+        });
+
+        // 心跳
+        setInterval(() => {
+            if (isConnected && ws) {
+                ws.send(JSON.stringify({ type: 'ping' }));
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
